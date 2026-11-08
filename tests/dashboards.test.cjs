@@ -103,6 +103,24 @@ test('recharge links retain the analysis context and set charge_id once', () => 
   }
 });
 
+test('energy detail panels omit unused calculations and retain displayed fields', () => {
+  const dailySql = panel('tm-energie-reelle.json', 25).targets[0].rawSql;
+  assert.doesNotMatch(dailySql, /h_clim|is_climate_on/);
+  assert.match(dailySql, /AS h_sleep\n\s+FROM gaps g/);
+  assert.doesNotMatch(dailySql, /AS h_sleep,\s+FROM/);
+  assert.match(dailySql, /sum\(dist\) AS km/);
+  for (const field of ['Roulage', 'Sentinelle boulot', 'Arrêt éveillé', 'Veille', 'Conso réelle (kWh/100 km)']) {
+    assert.ok(dailySql.includes(`AS "${field}"`), field);
+  }
+
+  const parkingSql = panel('tm-energie-reelle.json', 78).targets[0].rawSql;
+  assert.doesNotMatch(parkingSql, /AS dist|\bdistance\b/);
+  assert.match(parkingSql, /SELECT 'now', p\.t1, p\.t1, l\.r, l\.r, NULL, NULL FROM params p, lastpos l/);
+  for (const field of ['Début', 'Fin', 'Lieu', 'Durée', 'Endormi', 'Clim', 'Perte km', 'kWh', 'Puissance moy.', 'dont éveillé']) {
+    assert.ok(parkingSql.includes(`AS "${field}"`), field);
+  }
+});
+
 const schema = `
   CREATE TEMP TABLE cars (id integer, efficiency double precision);
   CREATE TEMP TABLE positions (id integer, car_id integer, date timestamp, drive_id integer,
