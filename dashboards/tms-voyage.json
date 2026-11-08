@@ -378,7 +378,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "lengthkm",
+          "unit": "suffix: km",
           "decimals": 0,
           "color": {
             "mode": "thresholds"
@@ -1332,7 +1332,7 @@
             "properties": [
               {
                 "id": "unit",
-                "value": "lengthkm"
+                "value": "suffix: km"
               },
               {
                 "id": "decimals",
@@ -1786,7 +1786,7 @@
             "properties": [
               {
                 "id": "unit",
-                "value": "lengthkm"
+                "value": "suffix: km"
               },
               {
                 "id": "custom.axisPlacement",
@@ -1849,7 +1849,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "lengthm",
+          "unit": "suffix: m",
           "color": {
             "mode": "palette-classic"
           },

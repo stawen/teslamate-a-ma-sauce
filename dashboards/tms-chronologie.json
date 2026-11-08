@@ -816,7 +816,7 @@
             "properties": [
               {
                 "id": "unit",
-                "value": "lengthkm"
+                "value": "suffix: km"
               },
               {
                 "id": "decimals",

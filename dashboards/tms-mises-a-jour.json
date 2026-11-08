@@ -587,7 +587,7 @@
             "properties": [
               {
                 "id": "unit",
-                "value": "lengthkm"
+                "value": "suffix: km"
               },
               {
                 "id": "decimals",
@@ -687,7 +687,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "lengthkm",
+          "unit": "suffix: km",
           "color": {
             "mode": "palette-classic"
           },

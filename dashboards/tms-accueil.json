@@ -484,7 +484,7 @@
                 "vertical": "scale"
               },
               "placement": {
-                "left": 35.0,
+                "left": 35,
                 "top": 3,
                 "right": 49.62,
                 "bottom": 51
@@ -560,7 +560,7 @@
                 "vertical": "scale"
               },
               "placement": {
-                "left": 38.0,
+                "left": 38,
                 "top": 8,
                 "right": 50.12,
                 "bottom": 80
@@ -1017,7 +1017,7 @@
               "placement": {
                 "left": 87.12,
                 "top": 8,
-                "right": 1.0,
+                "right": 1,
                 "bottom": 80
               },
               "connections": []
@@ -1058,7 +1058,7 @@
               "placement": {
                 "left": 84.62,
                 "top": 21,
-                "right": 1.0,
+                "right": 1,
                 "bottom": 54
               },
               "connections": []
@@ -1091,7 +1091,7 @@
                 "vertical": "scale"
               },
               "placement": {
-                "left": 35.0,
+                "left": 35,
                 "top": 51,
                 "right": 49.62,
                 "bottom": 3
@@ -1167,7 +1167,7 @@
                 "vertical": "scale"
               },
               "placement": {
-                "left": 38.0,
+                "left": 38,
                 "top": 56,
                 "right": 50.12,
                 "bottom": 32
@@ -1622,7 +1622,7 @@
               "placement": {
                 "left": 87.12,
                 "top": 56,
-                "right": 1.0,
+                "right": 1,
                 "bottom": 32
               },
               "connections": []
@@ -1662,7 +1662,7 @@
               "placement": {
                 "left": 84.62,
                 "top": 69,
-                "right": 1.0,
+                "right": 1,
                 "bottom": 6
               },
               "connections": []
@@ -1752,7 +1752,7 @@
             "properties": [
               {
                 "id": "unit",
-                "value": "lengthkm"
+                "value": "suffix: km"
               },
               {
                 "id": "decimals",
@@ -1850,7 +1850,7 @@
             "properties": [
               {
                 "id": "unit",
-                "value": "lengthkm"
+                "value": "suffix: km"
               },
               {
                 "id": "decimals",
@@ -1987,7 +1987,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "lengthkm",
+          "unit": "suffix: km",
           "decimals": 0,
           "color": {
             "mode": "thresholds"

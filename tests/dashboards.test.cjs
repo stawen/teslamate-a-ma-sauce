@@ -38,6 +38,18 @@ test('dashboard UIDs and panel dependencies are unique and acyclic', () => {
   }
 });
 
+test('all dashboard distances and minute labels use fixed units', () => {
+  for (const { name, dashboard } of dashboards) {
+    for (const item of allPanels(dashboard.panels)) {
+      const units = [item.fieldConfig?.defaults?.unit, ...(item.fieldConfig?.overrides || [])
+        .flatMap(override => override.properties || [])
+        .filter(property => property.id === 'unit').map(property => property.value)];
+      assert.ok(!units.some(unit => ['lengthkm', 'lengthm', 'm'].includes(unit)), `${name} panel ${item.id}: automatic unit`);
+    }
+    assert.doesNotMatch(JSON.stringify(dashboard), /\bmins\b/i, `${name}: plural minute suffix`);
+  }
+});
+
 test('shared pie charts select only their source fields and retain their labels', () => {
   for (const [filename, id, sourceId] of [
     ['tm-energie-reelle.json', 24, 11],
@@ -146,6 +158,25 @@ test('trip distances use fixed metre or kilometre units and durations use min', 
   const speedSql = trip.panels.find(item => item.id === 25).targets[0].rawSql;
   assert.match(speedSql, /sum\(s\) \/ 60 AS "Minutes"/);
   assert.doesNotMatch(JSON.stringify(trip), /\bmins\b/i);
+});
+
+test('driving statistics keep every kilometre value in km', () => {
+  const driving = dashboards.find(entry => entry.name === 'tms-stats-conduite.json').dashboard;
+  const unit = (id, field) => {
+    const item = driving.panels.find(panel => panel.id === id);
+    if (!field) return item.fieldConfig.defaults.unit;
+    return item.fieldConfig.overrides.find(override => override.matcher.options === field)
+      .properties.find(property => property.id === 'unit').value;
+  };
+
+  for (const id of [4, 6, 7, 10, 11, 16, 18]) assert.equal(unit(id), 'suffix: km');
+  assert.equal(unit(15, 'Km'), 'suffix: km');
+  for (const item of driving.panels) {
+    const units = [item.fieldConfig?.defaults?.unit, ...(item.fieldConfig?.overrides || [])
+      .flatMap(override => override.properties || [])
+      .filter(property => property.id === 'unit').map(property => property.value)];
+    assert.ok(!units.some(value => value === 'lengthkm' || value === 'lengthm'), `panel ${item.id}: automatic length unit`);
+  }
 });
 
 const schema = `

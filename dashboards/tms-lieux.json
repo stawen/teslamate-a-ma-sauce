@@ -981,7 +981,7 @@
             "properties": [
               {
                 "id": "unit",
-                "value": "lengthm"
+                "value": "suffix: m"
               }
             ]
           },

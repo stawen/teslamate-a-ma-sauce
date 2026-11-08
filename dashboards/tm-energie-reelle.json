@@ -168,7 +168,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "lengthkm",
+          "unit": "suffix: km",
           "decimals": 0,
           "color": {
             "mode": "thresholds"
@@ -229,7 +229,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "lengthkm",
+          "unit": "suffix: km",
           "decimals": 0,
           "color": {
             "mode": "thresholds"
@@ -290,7 +290,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "lengthkm",
+          "unit": "suffix: km",
           "decimals": 0,
           "color": {
             "mode": "thresholds"
@@ -973,7 +973,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "lengthkm",
+          "unit": "suffix: km",
           "decimals": 0,
           "color": {
             "mode": "thresholds"
@@ -3000,7 +3000,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "lengthkm",
+          "unit": "suffix: km",
           "decimals": 0,
           "color": {
             "mode": "thresholds"
@@ -3266,7 +3266,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "lengthkm",
+          "unit": "suffix: km",
           "decimals": 0,
           "color": {
             "mode": "thresholds"
@@ -3327,7 +3327,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "lengthkm",
+          "unit": "suffix: km",
           "decimals": 0,
           "color": {
             "mode": "thresholds"
@@ -3388,7 +3388,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "lengthkm",
+          "unit": "suffix: km",
           "decimals": 0,
           "color": {
             "mode": "thresholds"
@@ -3449,7 +3449,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "lengthkm",
+          "unit": "suffix: km",
           "decimals": 0,
           "color": {
             "mode": "thresholds"
@@ -4574,7 +4574,7 @@
             "properties": [
               {
                 "id": "unit",
-                "value": "m"
+                "value": "suffix: min"
               }
             ]
           },
@@ -5166,7 +5166,7 @@
             "properties": [
               {
                 "id": "unit",
-                "value": "m"
+                "value": "suffix: min"
               },
               {
                 "id": "decimals",
@@ -5182,7 +5182,7 @@
             "properties": [
               {
                 "id": "unit",
-                "value": "lengthkm"
+                "value": "suffix: km"
               },
               {
                 "id": "decimals",
@@ -5423,7 +5423,7 @@
             "properties": [
               {
                 "id": "unit",
-                "value": "lengthkm"
+                "value": "suffix: km"
               },
               {
                 "id": "decimals",
@@ -5472,7 +5472,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "lengthkm",
+          "unit": "suffix: km",
           "decimals": 0,
           "color": {
             "mode": "fixed",
