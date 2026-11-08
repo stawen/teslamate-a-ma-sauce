@@ -963,7 +963,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "WITH s AS (SELECT date, is_climate_on, LEAST(extract(epoch FROM lead(date) OVER (ORDER BY date) - date), 900) AS dt\n           FROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND drive_id IS NULL AND ideal_battery_range_km IS NOT NULL)\nSELECT date_trunc('day', timezone('UTC', date), '$__timezone') AS time, sum(dt) FILTER (WHERE is_climate_on) / 3600 AS \"Heures\"\nFROM s GROUP BY 1 ORDER BY 1",
+          "rawSql": "WITH s AS (SELECT date, drive_id, is_climate_on, lead(date) OVER (ORDER BY date) AS next_date\n           FROM positions WHERE car_id = $car_id AND $__timeFilter(date)),\nintervals AS (SELECT date, is_climate_on, CASE WHEN next_date IS NOT NULL THEN LEAST(extract(epoch FROM next_date - date), 900) END AS dt\n              FROM s WHERE drive_id IS NULL)\nSELECT date_trunc('day', timezone('UTC', date), '$__timezone') AS time, sum(dt) FILTER (WHERE is_climate_on) / 3600 AS \"Heures\"\nFROM intervals GROUP BY 1 ORDER BY 1",
           "refId": "A"
         }
       ],

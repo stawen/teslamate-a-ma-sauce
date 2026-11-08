@@ -140,6 +140,27 @@ Avec docker-compose, un simple `git pull` suffit (voir plus haut).
 - **Superchargeurs** : TeslaMate ne connaît souvent que l'énergie entrée dans la batterie, donc les pertes en DC ne sont pas comptées.
 - Le rapport fiscal néerlandais des tableaux d'origine n'est pas repris.
 
+## Validation des modifications
+
+Les tests locaux nécessitent Node.js 22 ou plus récent, sans dépendance npm :
+
+```sh
+node --test tests/dashboards.test.cjs
+```
+
+Ils vérifient les JSON, l'unicité des UID, les dépendances entre panneaux, les champs des camemberts partagés et les corrections ciblées. Ils ne remplacent pas un import ni un contrôle du rendu dans Grafana.
+
+Les scénarios SQL sont activables avec `psql` sur une **base PostgreSQL de test**, distincte de TeslaMate. Configure la connexion avec les variables habituelles de PostgreSQL, sans mettre de mot de passe dans la commande :
+
+```sh
+PGHOST=127.0.0.1 PGPORT=5432 PGDATABASE=dashboard_tests PGUSER=dashboard_tests \
+  TMS_SQL_TESTS=1 node --test tests/dashboards.test.cjs
+```
+
+Ces scénarios utilisent exclusivement des tables temporaires dans des transactions annulées. La CI les exécute sur PostgreSQL 18 ; elle ne valide pas la compatibilité avec toutes les versions de Grafana ni avec les migrations réelles de TeslaMate.
+
+Après import, vérifie les camemberts d'Énergie réelle et des statistiques de recharge, y compris quand leur panneau source est hors écran, puis la sélection d'une recharge et la conservation des réglages. Pour mesurer les performances, compare les mêmes périodes et paramètres dans l'inspecteur de requêtes avant et après la modification. Trois requêtes autonomes ont été supprimées, mais le gain de temps dépend de la base et doit être mesuré.
+
 ## 👋 À propos
 
 Je ne suis pas développeur, juste un propriétaire de Tesla qui aime comprendre sa voiture et partager ses idées.

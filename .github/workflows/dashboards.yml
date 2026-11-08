@@ -1,0 +1,44 @@
+name: Dashboard Validation
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  dashboards:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-trixie
+        env:
+          POSTGRES_USER: dashboard_tests
+          POSTGRES_PASSWORD: dashboard_tests
+          POSTGRES_DB: dashboard_tests
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U dashboard_tests -d dashboard_tests"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      - name: Validate dashboards and PostgreSQL fixtures
+        run: node --test tests/dashboards.test.cjs
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: 5432
+          PGDATABASE: dashboard_tests
+          PGUSER: dashboard_tests
+          PGPASSWORD: dashboard_tests
+          TMS_SQL_TESTS: '1'

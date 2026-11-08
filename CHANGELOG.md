@@ -1,5 +1,13 @@
 # Historique des versions
 
+## À venir
+- Énergie réelle : le camembert réutilise les résultats du bilan au lieu de recalculer les événements et les stationnements
+- Statistiques de recharge : une seule agrégation des mesures par recharge ; les camemberts AC/DC réutilisent les totaux d'énergie et de durée
+- Correction : la santé et la dégradation de la batterie restent inconnues lorsqu'une capacité nécessaire au calcul manque
+- Correction : la durée de climatisation à l'arrêt ne traverse plus les relevés de conduite exclus et n'ajoute plus 15 minutes au dernier relevé ; les positions sans autonomie sont conservées pour calculer les intervalles
+- Énergie réelle : les liens vers une recharge conservent les réglages de période, de coût et de comparaison thermique
+- Tests des JSON et des dépendances Grafana, avec scénarios SQL sur PostgreSQL 18 dans la CI
+
 ## 1.4 — 02/11/2026
 - Installation possible avec docker-compose, sans jeton ni script (proposée par @stawen)
 - Requêtes nettement plus rapides, pensées pour les petites machines (Raspberry Pi) : elles utilisent désormais les index de TeslaMate. Sur une base de test de 2 millions de positions, le temps de calcul de l'ensemble des tableaux est divisé par 5 environ

@@ -6,7 +6,7 @@ providers:
   - name: teslamate-a-ma-sauce
     orgId: 1
     folder: TeslaMate — à ma sauce
-    folderUid: teslamate-a-ma-sauce
+    folderUid: jchmTmCuGrDb
     type: file
     disableDeletion: false
     allowUiUpdates: true

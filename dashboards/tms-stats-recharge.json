@@ -244,7 +244,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "WITH x AS (SELECT cp.*, (SELECT CASE WHEN bool_or(c.fast_charger_present) OR NULLIF(max(c.charger_phases), 0) IS NULL THEN 'DC' ELSE 'AC' END FROM charges c WHERE c.charging_process_id = cp.id) AS typ, ((SELECT CASE WHEN bool_or(c.fast_charger_present) OR NULLIF(max(c.charger_phases), 0) IS NULL THEN 'DC' ELSE 'AC' END FROM charges c WHERE c.charging_process_id = cp.id) = 'DC' AND (COALESCE(g.name, CONCAT_WS(', ', COALESCE(a.name, NULLIF(CONCAT_WS(' ', a.road, a.house_number), '')), COALESCE(a.city, a.neighbourhood))) ILIKE '%supercharg%' OR EXISTS (SELECT 1 FROM charges c WHERE c.charging_process_id = cp.id AND c.fast_charger_brand = 'Tesla'))) AS suc, greatest(cp.charge_energy_added, cp.charge_energy_used) AS wall FROM charging_processes cp LEFT JOIN addresses a ON a.id = cp.address_id LEFT JOIN geofences g ON g.id = cp.geofence_id\n  LEFT JOIN positions p ON p.id = cp.position_id WHERE cp.car_id = $car_id AND $__timeFilter(cp.start_date) AND cp.end_date IS NOT NULL AND cp.charge_energy_added > 0),\nkm AS (SELECT sum(distance) AS km FROM drives WHERE car_id = $car_id AND $__timeFilter(start_date) AND end_date IS NOT NULL)\nSELECT count(*) AS \"Recharges\", sum(charge_energy_added) AS \"Ajouté\", sum(wall) AS \"Prise\", sum(cost) AS \"Coût\",\n  sum(cost) FILTER (WHERE suc) AS \"Superchargeurs\", sum(cost) / nullif(sum(wall) FILTER (WHERE cost IS NOT NULL), 0) AS \"Prix kWh\",\n  sum(cost) FILTER (WHERE typ = 'AC') / nullif(sum(wall) FILTER (WHERE typ = 'AC' AND cost IS NOT NULL), 0) AS \"Prix AC\",\n  sum(cost) FILTER (WHERE typ = 'DC') / nullif(sum(wall) FILTER (WHERE typ = 'DC' AND cost IS NOT NULL), 0) AS \"Prix DC\",\n  sum(cost) * 100 / nullif((SELECT km FROM km), 0) AS \"Coût aux 100 km\",\n  sum(charge_energy_added) FILTER (WHERE typ = 'AC') / nullif(sum(wall) FILTER (WHERE typ = 'AC'), 0) * 100 AS \"Rendement AC\",\n  sum(charge_energy_added) FILTER (WHERE typ = 'DC') / nullif(sum(charge_energy_added), 0) * 100 AS \"Part DC\"\nFROM x",
+          "rawSql": "WITH x AS (SELECT cp.*, charge.typ, (charge.typ = 'DC' AND (COALESCE(g.name, CONCAT_WS(', ', COALESCE(a.name, NULLIF(CONCAT_WS(' ', a.road, a.house_number), '')), COALESCE(a.city, a.neighbourhood))) ILIKE '%supercharg%' OR COALESCE(charge.tesla, false))) AS suc, greatest(cp.charge_energy_added, cp.charge_energy_used) AS wall\n  FROM charging_processes cp LEFT JOIN addresses a ON a.id = cp.address_id LEFT JOIN geofences g ON g.id = cp.geofence_id\n  JOIN LATERAL (SELECT CASE WHEN bool_or(c.fast_charger_present) OR NULLIF(max(c.charger_phases), 0) IS NULL THEN 'DC' ELSE 'AC' END AS typ,\n                       bool_or(c.fast_charger_brand = 'Tesla') AS tesla\n                FROM charges c WHERE c.charging_process_id = cp.id) charge ON true\n  WHERE cp.car_id = $car_id AND $__timeFilter(cp.start_date) AND cp.end_date IS NOT NULL AND cp.charge_energy_added > 0),\nkm AS (SELECT sum(distance) AS km FROM drives WHERE car_id = $car_id AND $__timeFilter(start_date) AND end_date IS NOT NULL)\nSELECT count(*) AS \"Recharges\", sum(charge_energy_added) AS \"Ajouté\", sum(wall) AS \"Prise\", sum(cost) AS \"Coût\",\n  sum(cost) FILTER (WHERE suc) AS \"Superchargeurs\", sum(cost) / nullif(sum(wall) FILTER (WHERE cost IS NOT NULL), 0) AS \"Prix kWh\",\n  sum(cost) FILTER (WHERE typ = 'AC') / nullif(sum(wall) FILTER (WHERE typ = 'AC' AND cost IS NOT NULL), 0) AS \"Prix AC\",\n  sum(cost) FILTER (WHERE typ = 'DC') / nullif(sum(wall) FILTER (WHERE typ = 'DC' AND cost IS NOT NULL), 0) AS \"Prix DC\",\n  sum(cost) * 100 / nullif((SELECT km FROM km), 0) AS \"Coût aux 100 km\",\n  sum(charge_energy_added) FILTER (WHERE typ = 'AC') / nullif(sum(wall) FILTER (WHERE typ = 'AC'), 0) * 100 AS \"Rendement AC\",\n  sum(charge_energy_added) FILTER (WHERE typ = 'DC') / nullif(sum(charge_energy_added), 0) * 100 AS \"Part DC\",\n  sum(charge_energy_added) FILTER (WHERE typ = 'AC') AS \"Ajouté AC\", sum(charge_energy_added) FILTER (WHERE typ = 'DC') AS \"Ajouté DC\",\n  sum(duration_min) FILTER (WHERE typ = 'AC') * 60 AS \"Durée AC\", sum(duration_min) FILTER (WHERE typ = 'DC') * 60 AS \"Durée DC\"\nFROM x",
           "refId": "A"
         }
       ],
@@ -928,8 +928,8 @@
       "title": "Énergie AC / DC",
       "description": "",
       "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "TeslaMate"
+        "type": "datasource",
+        "uid": "-- Dashboard --"
       },
       "gridPos": {
         "x": 0,
@@ -940,14 +940,28 @@
       "targets": [
         {
           "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "TeslaMate"
+            "type": "datasource",
+            "uid": "-- Dashboard --"
           },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "SELECT (SELECT CASE WHEN bool_or(c.fast_charger_present) OR NULLIF(max(c.charger_phases), 0) IS NULL THEN 'DC' ELSE 'AC' END FROM charges c WHERE c.charging_process_id = cp.id) AS metric, sum(cp.charge_energy_added) AS value FROM charging_processes cp WHERE cp.car_id = $car_id AND $__timeFilter(cp.start_date) AND cp.end_date IS NOT NULL AND cp.charge_energy_added > 0 GROUP BY 1",
+          "panelId": 3,
           "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": ["Ajouté AC", "Ajouté DC"]
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {"Ajouté AC": 0, "Ajouté DC": 1},
+            "renameByName": {"Ajouté AC": "AC", "Ajouté DC": "DC"}
+          }
         }
       ],
       "options": {
@@ -960,7 +974,7 @@
             "lastNotNull"
           ],
           "fields": "",
-          "values": true
+          "values": false
         },
         "legend": {
           "displayMode": "table",
@@ -1151,8 +1165,8 @@
       "title": "Temps branché AC / DC",
       "description": "",
       "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "TeslaMate"
+        "type": "datasource",
+        "uid": "-- Dashboard --"
       },
       "gridPos": {
         "x": 19,
@@ -1163,14 +1177,28 @@
       "targets": [
         {
           "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "TeslaMate"
+            "type": "datasource",
+            "uid": "-- Dashboard --"
           },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "SELECT (SELECT CASE WHEN bool_or(c.fast_charger_present) OR NULLIF(max(c.charger_phases), 0) IS NULL THEN 'DC' ELSE 'AC' END FROM charges c WHERE c.charging_process_id = cp.id) AS metric, sum(cp.duration_min) * 60 AS value FROM charging_processes cp WHERE cp.car_id = $car_id AND $__timeFilter(cp.start_date) AND cp.end_date IS NOT NULL AND cp.charge_energy_added > 0 GROUP BY 1",
+          "panelId": 3,
           "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": ["Durée AC", "Durée DC"]
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {"Durée AC": 0, "Durée DC": 1},
+            "renameByName": {"Durée AC": "AC", "Durée DC": "DC"}
+          }
         }
       ],
       "options": {
@@ -1183,7 +1211,7 @@
             "lastNotNull"
           ],
           "fields": "",
-          "values": true
+          "values": false
         },
         "legend": {
           "displayMode": "table",

@@ -1325,21 +1325,61 @@
         "y": 21
       },
       "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "TeslaMate"
+        "type": "datasource",
+        "uid": "-- Dashboard --"
       },
       "description": "",
       "targets": [
         {
           "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "TeslaMate"
+            "type": "datasource",
+            "uid": "-- Dashboard --"
           },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "WITH params AS (\n  SELECT c.efficiency AS eff,\n         (SELECT max(end_km) FROM drives WHERE car_id = $car_id) - $km AS km_from,\n         CASE WHEN '${fenetre}' = 'periode' THEN LEAST($__timeTo()::timestamp, now() AT TIME ZONE 'UTC') ELSE now() AT TIME ZONE 'UTC' END AS t1\n  FROM cars c WHERE c.id = $car_id\n),\nlastpos AS (\n  SELECT date, odometer, ${preferred_range}_battery_range_km AS r\n  FROM positions\n  WHERE car_id = $car_id AND ideal_battery_range_km IS NOT NULL AND ${preferred_range}_battery_range_km IS NOT NULL AND date <= (SELECT t1 FROM params)\n  ORDER BY date DESC LIMIT 1\n),\nwin AS (\n  SELECT min(d.start_date) AS t0\n  FROM drives d, params p\n  WHERE d.car_id = $car_id AND d.start_date < p.t1\n    AND CASE WHEN '${fenetre}' = 'periode' THEN d.start_date >= $__timeFrom()::timestamp\n             ELSE COALESCE(d.end_km, (SELECT odometer FROM lastpos)) > p.km_from END\n),\nev AS (\n  SELECT 'drive' AS kind, d.start_date AS s, COALESCE(d.end_date, p.t1) AS e,\n         d.start_${preferred_range}_range_km AS sr, COALESCE(d.end_${preferred_range}_range_km, (SELECT r FROM lastpos)) AS er,\n         COALESCE(d.distance, (SELECT odometer FROM lastpos) - d.start_km) AS dist,\n         d.end_geofence_id AS geofence_id, d.end_address_id AS address_id\n  FROM drives d, params p, win w\n  WHERE d.car_id = $car_id AND d.start_date >= w.t0 AND d.start_date < p.t1\n  UNION ALL\n  SELECT 'charge', cp.start_date, COALESCE(cp.end_date, p.t1),\n         cp.start_${preferred_range}_range_km, COALESCE(cp.end_${preferred_range}_range_km, (SELECT r FROM lastpos)),\n         0, cp.geofence_id, cp.address_id\n  FROM charging_processes cp, params p, win w\n  WHERE cp.car_id = $car_id AND cp.start_date >= w.t0 AND cp.start_date < p.t1\n  UNION ALL\n  SELECT 'now', p.t1, p.t1, l.r, l.r, 0, NULL, NULL FROM params p, lastpos l\n),\nseq AS (\n  SELECT ev.*, lead(s) OVER o AS ns, lead(sr) OVER o AS nsr\n  FROM ev WINDOW o AS (ORDER BY s, kind)\n),\ngaps AS (  -- every period where the car is parked and not charging\n  SELECT seq.e AS ps, seq.ns AS pe, seq.geofence_id, seq.address_id,\n         (seq.er - seq.nsr) AS range_lost,\n         (seq.er - seq.nsr) * p.eff AS kwh,\n         extract(epoch FROM seq.ns - seq.e) / 3600.0 AS h\n  FROM seq, params p\n  WHERE seq.kind <> 'now' AND seq.ns IS NOT NULL AND seq.ns > seq.e\n),\ngaps2 AS (\n  SELECT g.*,\n    COALESCE((SELECT sum(extract(epoch FROM least(COALESCE(st.end_date, g.pe), g.pe) - greatest(st.start_date, g.ps))) / 3600.0\n              FROM states st\n              WHERE st.car_id = $car_id AND st.state IN ('asleep', 'offline')\n                AND st.start_date < g.pe AND COALESCE(st.end_date, g.pe) > g.ps), 0) AS h_sleep,\n    COALESCE((SELECT sum(least(extract(epoch FROM x.nd - x.date), 600)) / 3600.0\n              FROM (SELECT date, is_climate_on, lead(date) OVER (ORDER BY date) AS nd\n                    FROM positions\n                    WHERE car_id = $car_id AND drive_id IS NULL AND ideal_battery_range_km IS NOT NULL AND date >= g.ps AND date < g.pe) x\n              WHERE x.is_climate_on AND x.nd IS NOT NULL), 0) AS h_clim\n  FROM gaps g\n),\nvs AS (  -- sleep power: kWh / hours asleep is an upper bound for every parking; take a low percentile of it\n  SELECT least(greatest(COALESCE(\n           percentile_cont(0.2) WITHIN GROUP (ORDER BY kwh / h_sleep) FILTER (WHERE h_sleep >= 4 AND kwh >= 0),\n           0.03), 0.005), 0.15) AS p_sleep\n  FROM gaps2\n),\nsplit AS (\n  SELECT g.*, least(g.kwh, vs.p_sleep * g.h_sleep) AS kwh_sleep,\n         g.kwh - least(g.kwh, vs.p_sleep * g.h_sleep) AS kwh_awake,\n         COALESCE(g.geofence_id = $work, false) AS is_work\n  FROM gaps2 g, vs\n)\nSELECT 'Roulage' AS metric, sum((sr - er) * (SELECT eff FROM params)) AS value FROM ev WHERE kind = 'drive'\nUNION ALL SELECT 'Sentinelle au boulot', sum(kwh_awake) FILTER (WHERE is_work) FROM split\nUNION ALL SELECT 'Arrêt éveillé ailleurs (clim, appli…)', sum(kwh_awake) FILTER (WHERE NOT is_work) FROM split\nUNION ALL SELECT 'Veille (endormi)', sum(kwh_sleep) FROM split",
+          "panelId": 11,
           "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "binary",
+            "binary": {
+              "left": "Arrêt éveillé",
+              "operator": "-",
+              "right": "Sentinelle boulot"
+            },
+            "alias": "Arrêt éveillé ailleurs (clim, appli…)",
+            "replaceFields": false
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "Roulage",
+                "Sentinelle boulot",
+                "Arrêt éveillé ailleurs (clim, appli…)",
+                "Veille"
+              ]
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "Roulage": 0,
+              "Sentinelle boulot": 1,
+              "Arrêt éveillé ailleurs (clim, appli…)": 2,
+              "Veille": 3
+            },
+            "renameByName": {
+              "Sentinelle boulot": "Sentinelle au boulot",
+              "Veille": "Veille (endormi)"
+            }
+          }
         }
       ],
       "options": {
@@ -1352,7 +1392,7 @@
             "lastNotNull"
           ],
           "fields": "",
-          "values": true
+          "values": false
         },
         "legend": {
           "displayMode": "table",
@@ -4762,7 +4802,7 @@
                 "value": [
                   {
                     "title": "Voir la courbe de cette recharge",
-                    "url": "/d/${__dashboard.uid}/${__dashboard}?${__url_time_range}&${car_id:queryparam}&${km:queryparam}&${work:queryparam}&var-charge_id=${__data.fields.id.numeric}"
+                    "url": "/d/${__dashboard.uid}/${__dashboard}?${__url_time_range}&${car_id:queryparam}&${fenetre:queryparam}&${km:queryparam}&${work:queryparam}&${thermique:queryparam}&${carburant:queryparam}&${prix_kwh:queryparam}&${wltp:queryparam}&var-charge_id=${__data.fields.id.numeric}"
                   }
                 ]
               }
@@ -4779,7 +4819,7 @@
                 "value": [
                   {
                     "title": "Voir la courbe de cette recharge",
-                    "url": "/d/${__dashboard.uid}/${__dashboard}?${__url_time_range}&${car_id:queryparam}&${km:queryparam}&${work:queryparam}&var-charge_id=${__data.fields.id.numeric}"
+                    "url": "/d/${__dashboard.uid}/${__dashboard}?${__url_time_range}&${car_id:queryparam}&${fenetre:queryparam}&${km:queryparam}&${work:queryparam}&${thermique:queryparam}&${carburant:queryparam}&${prix_kwh:queryparam}&${wltp:queryparam}&var-charge_id=${__data.fields.id.numeric}"
                   }
                 ]
               },
