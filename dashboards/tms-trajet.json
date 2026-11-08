@@ -263,7 +263,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT COALESCE(sg.name, CONCAT_WS(', ', COALESCE(sa.name, NULLIF(CONCAT_WS(' ', sa.road, sa.house_number), '')), COALESCE(sa.city, sa.neighbourhood))) AS \"Départ\", COALESCE(eg.name, CONCAT_WS(', ', COALESCE(ea.name, NULLIF(CONCAT_WS(' ', ea.road, ea.house_number), '')), COALESCE(ea.city, ea.neighbourhood))) AS \"Arrivée\", d.distance AS \"Distance\", d.duration_min * 60 AS \"Durée\",\n  (d.start_${preferred_range}_range_km - d.end_${preferred_range}_range_km) * car.efficiency AS \"Énergie\",\n  (d.start_${preferred_range}_range_km - d.end_${preferred_range}_range_km) * car.efficiency * 100 / nullif(d.distance, 0) AS \"Conso\",\n  d.distance / nullif(d.duration_min, 0) * 60 AS \"Vitesse moyenne\", d.speed_max AS \"Vitesse max\",\n  sp.battery_level AS \"SOC départ\", ep.battery_level AS \"SOC arrivée\", d.ascent AS \"Montée\", d.descent AS \"Descente\",\n  d.outside_temp_avg AS \"Temp. ext.\", d.inside_temp_avg AS \"Temp. int.\", d.power_max AS \"Puissance max\", -d.power_min AS \"Régénération max\",\n  d.distance / nullif(d.start_${preferred_range}_range_km - d.end_${preferred_range}_range_km, 0) * 100 AS \"Efficacité\",\n  d.start_km AS \"Odomètre\"\nFROM drives d JOIN cars car ON car.id = d.car_id\n  LEFT JOIN addresses sa ON sa.id = d.start_address_id LEFT JOIN addresses ea ON ea.id = d.end_address_id\n  LEFT JOIN geofences sg ON sg.id = d.start_geofence_id LEFT JOIN geofences eg ON eg.id = d.end_geofence_id\n  LEFT JOIN positions sp ON sp.id = d.start_position_id LEFT JOIN positions ep ON ep.id = d.end_position_id WHERE d.id = $drive_id",
+          "rawSql": "SELECT COALESCE(sg.name, CONCAT_WS(', ', COALESCE(sa.name, NULLIF(CONCAT_WS(' ', sa.road, sa.house_number), '')), COALESCE(sa.city, sa.neighbourhood))) AS \"Départ\", COALESCE(eg.name, CONCAT_WS(', ', COALESCE(ea.name, NULLIF(CONCAT_WS(' ', ea.road, ea.house_number), '')), COALESCE(ea.city, ea.neighbourhood))) AS \"Arrivée\", d.distance AS \"Distance\", d.duration_min AS \"Durée\",\n  (d.start_${preferred_range}_range_km - d.end_${preferred_range}_range_km) * car.efficiency AS \"Énergie\",\n  (d.start_${preferred_range}_range_km - d.end_${preferred_range}_range_km) * car.efficiency * 100 / nullif(d.distance, 0) AS \"Conso\",\n  d.distance / nullif(d.duration_min, 0) * 60 AS \"Vitesse moyenne\", d.speed_max AS \"Vitesse max\",\n  sp.battery_level AS \"SOC départ\", ep.battery_level AS \"SOC arrivée\", d.ascent AS \"Montée\", d.descent AS \"Descente\",\n  d.outside_temp_avg AS \"Temp. ext.\", d.inside_temp_avg AS \"Temp. int.\", d.power_max AS \"Puissance max\", -d.power_min AS \"Régénération max\",\n  d.distance / nullif(d.start_${preferred_range}_range_km - d.end_${preferred_range}_range_km, 0) * 100 AS \"Efficacité\",\n  d.start_km AS \"Odomètre\"\nFROM drives d JOIN cars car ON car.id = d.car_id\n  LEFT JOIN addresses sa ON sa.id = d.start_address_id LEFT JOIN addresses ea ON ea.id = d.end_address_id\n  LEFT JOIN geofences sg ON sg.id = d.start_geofence_id LEFT JOIN geofences eg ON eg.id = d.end_geofence_id\n  LEFT JOIN positions sp ON sp.id = d.start_position_id LEFT JOIN positions ep ON ep.id = d.end_position_id WHERE d.id = $drive_id",
           "refId": "A"
         }
       ],
@@ -409,7 +409,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "lengthkm",
+          "unit": "suffix: km",
           "decimals": 1,
           "color": {
             "mode": "thresholds"
@@ -471,7 +471,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "s",
+          "unit": "suffix: min",
           "decimals": 0,
           "color": {
             "mode": "thresholds"
@@ -855,7 +855,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "lengthm",
+          "unit": "suffix: m",
           "decimals": 0,
           "color": {
             "mode": "thresholds"
@@ -917,7 +917,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "lengthm",
+          "unit": "suffix: m",
           "decimals": 0,
           "color": {
             "mode": "thresholds"
@@ -1682,7 +1682,7 @@
             "properties": [
               {
                 "id": "unit",
-                "value": "lengthkm"
+                "value": "suffix: km"
               },
               {
                 "id": "custom.axisPlacement",
@@ -1741,7 +1741,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "lengthm",
+          "unit": "suffix: m",
           "color": {
             "mode": "palette-classic"
           },
@@ -1962,7 +1962,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "m",
+          "unit": "suffix: min",
           "color": {
             "mode": "palette-classic"
           },

@@ -121,6 +121,33 @@ test('energy detail panels omit unused calculations and retain displayed fields'
   }
 });
 
+test('trip distances use fixed metre or kilometre units and durations use min', () => {
+  const trip = dashboards.find(entry => entry.name === 'tms-trajet.json').dashboard;
+  const unit = (id, field) => {
+    const item = trip.panels.find(panel => panel.id === id);
+    if (!field) return item.fieldConfig.defaults.unit;
+    return item.fieldConfig.overrides.find(override => override.matcher.options === field)
+      .properties.find(property => property.id === 'unit').value;
+  };
+
+  assert.equal(unit(5), 'suffix: km');
+  assert.equal(unit(22, 'Autonomie'), 'suffix: km');
+  for (const id of [12, 13, 23]) assert.equal(unit(id), 'suffix: m');
+  for (const id of [6, 25]) assert.equal(unit(id), 'suffix: min');
+  for (const item of trip.panels) {
+    const units = [item.fieldConfig?.defaults?.unit, ...(item.fieldConfig?.overrides || [])
+      .flatMap(override => override.properties || [])
+      .filter(property => property.id === 'unit').map(property => property.value)];
+    assert.ok(!units.some(value => value === 'lengthkm' || value === 'lengthm'), `panel ${item.id}: automatic length unit`);
+  }
+
+  const sourceSql = trip.panels.find(item => item.id === 3).targets[0].rawSql;
+  assert.match(sourceSql, /d\.duration_min AS "Durée"/);
+  const speedSql = trip.panels.find(item => item.id === 25).targets[0].rawSql;
+  assert.match(speedSql, /sum\(s\) \/ 60 AS "Minutes"/);
+  assert.doesNotMatch(JSON.stringify(trip), /\bmins\b/i);
+});
+
 const schema = `
   CREATE TEMP TABLE cars (id integer, efficiency double precision);
   CREATE TEMP TABLE positions (id integer, car_id integer, date timestamp, drive_id integer,
