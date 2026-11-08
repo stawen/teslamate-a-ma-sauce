@@ -1,12 +1,13 @@
 # Historique des versions
 
-## À venir
-- Énergie réelle : le camembert réutilise les résultats du bilan au lieu de recalculer les événements et les stationnements
-- Statistiques de recharge : une seule agrégation des mesures par recharge ; les camemberts AC/DC réutilisent les totaux d'énergie et de durée
-- Correction : la santé et la dégradation de la batterie restent inconnues lorsqu'une capacité nécessaire au calcul manque
-- Correction : la durée de climatisation à l'arrêt ne traverse plus les relevés de conduite exclus et n'ajoute plus 15 minutes au dernier relevé ; les positions sans autonomie sont conservées pour calculer les intervalles
-- Énergie réelle : les liens vers une recharge conservent les réglages de période, de coût et de comparaison thermique
-- Tests des JSON et des dépendances Grafana, avec scénarios SQL sur PostgreSQL 18 dans la CI
+## Unreleased
+- Énergie réelle : le camembert réutilise les résultats du bilan ; suppression de calculs inutilisés dans les vues quotidiennes et les détails de stationnement
+- Statistiques de recharge : agrégation des mesures une seule fois par recharge ; les camemberts AC/DC réutilisent les résultats
+- Corrections : santé de batterie inconnue lorsque les données nécessaires manquent ; durée de climatisation calculée sans prolonger les intervalles à travers la conduite ni après le dernier relevé
+- Énergie réelle : les liens vers une recharge conservent les réglages d'analyse
+- Unités harmonisées dans les dashboards : les distances restent en km ou en m, sans conversion automatique en Mm ; les durées utilisent le suffixe min
+- Tests des JSON, des dépendances Grafana et des unités ; scénarios SQL exécutés sur PostgreSQL 18 dans la CI
+- CI : actions mises à jour pour utiliser leur runtime Node.js 24 ; tests exécutés avec Node.js 22
 
 ## 1.4 — 02/11/2026
 - Installation possible avec docker-compose, sans jeton ni script (proposée par @stawen)
