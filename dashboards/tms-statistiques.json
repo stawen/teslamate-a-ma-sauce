@@ -713,6 +713,10 @@
             },
             "properties": [
               {
+                "id": "unit",
+                "value": "suffix: km"
+              },
+              {
                 "id": "color",
                 "value": {
                   "mode": "fixed",
